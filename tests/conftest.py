@@ -3,7 +3,6 @@ import time
 import pytest
 import logging
 from appium import webdriver
-from appium.options import AppiumOptions as UiAutomator2Options
 from capabilities import APPIUM_SERVER, CAPABILITIES, WEBVIEW_CONTEXT_PREFIX, NATIVE_CONTEXT
 
 logger = logging.getLogger(__name__)
@@ -62,8 +61,7 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.fixture(scope="function")
 def driver(request):
-    options = UiAutomator2Options().load_capabilities(CAPABILITIES)
-    _driver = webdriver.Remote(APPIUM_SERVER, options=options)
+    _driver = webdriver.Remote(APPIUM_SERVER, desired_capabilities=CAPABILITIES)
     _driver.implicitly_wait(10)
 
     _driver_store[request.node.nodeid] = _driver
