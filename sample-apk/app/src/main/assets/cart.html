@@ -109,37 +109,41 @@
     render();
   }
 
+  var couponMsgText = '';
+  var couponMsgCls = 'coupon-msg';
+
+  function applyCouponMsg(text, cls) {
+    couponMsgText = text;
+    couponMsgCls = cls;
+    var el = document.getElementById('coupon_msg');
+    if (el) { el.textContent = text; el.className = cls; }
+  }
+
   function applyCoupon() {
     var code = document.getElementById('coupon_input').value.trim().toUpperCase();
-    var msgEl = document.getElementById('coupon_msg');
-    msgEl.className = 'coupon-msg';
 
     if (!code) {
-      msgEl.textContent = '쿠폰 코드를 입력해주세요.';
-      msgEl.className = 'coupon-msg error';
+      applyCouponMsg('쿠폰 코드를 입력해주세요.', 'coupon-msg error');
       return;
     }
 
     if (!(code in VALID_COUPONS)) {
-      msgEl.textContent = '유효하지 않은 쿠폰 코드입니다.';
-      msgEl.className = 'coupon-msg error';
       appliedCoupon = null;
       render();
+      applyCouponMsg('유효하지 않은 쿠폰 코드입니다.', 'coupon-msg error');
       return;
     }
 
     var coupon = VALID_COUPONS[code];
     if (coupon === null) {
-      // FAIL_TEST 쿠폰: 결제 실패 시나리오 준비
       appliedCoupon = { code: code, label: '테스트 쿠폰', rate: 0, forceFailure: true };
-      msgEl.textContent = '쿠폰이 적용되었습니다.';
-      msgEl.className = 'coupon-msg success';
+      render();
+      applyCouponMsg('쿠폰이 적용되었습니다.', 'coupon-msg success');
     } else {
       appliedCoupon = { code: code, label: coupon.label, rate: coupon.rate, forceFailure: false };
-      msgEl.textContent = coupon.label + ' 쿠폰이 적용되었습니다.';
-      msgEl.className = 'coupon-msg success';
+      render();
+      applyCouponMsg(coupon.label + ' 쿠폰이 적용되었습니다.', 'coupon-msg success');
     }
-    render();
   }
 
   function render() {

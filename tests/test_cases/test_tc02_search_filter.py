@@ -3,9 +3,9 @@ import pytest
 from pages.login_page import LoginPage
 from pages.products_page import ProductsPage
 
-TOTAL_PRODUCTS = 8
-ELECTRONICS_COUNT = 3
-FASHION_COUNT = 3
+TOTAL_PRODUCTS = 10
+ELECTRONICS_COUNT = 4
+FASHION_COUNT = 4
 FOOD_COUNT = 2
 
 
