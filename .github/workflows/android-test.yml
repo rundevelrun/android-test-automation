@@ -53,6 +53,9 @@ jobs:
     name: Appium Test (API ${{ matrix.api-level }})
     needs: build-apk
     runs-on: ubuntu-latest  # 에뮬레이터는 Linux 기준
+    permissions:
+      checks: write       # publish-unit-test-result-action 필요
+      contents: read
 
     strategy:
       fail-fast: false
@@ -164,10 +167,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: |
-            # 에뮬레이터 완전 부팅 대기
-            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
-            echo "에뮬레이터 부팅 완료"
-
+            # emulator-runner가 부팅 대기를 처리하므로 추가 대기 불필요
             # 에뮬레이터 디바이스명 확인
             DEVICE=$(adb devices | grep -v "List of" | grep "device$" | awk '{print $1}' | head -1)
             echo "디바이스: $DEVICE"
