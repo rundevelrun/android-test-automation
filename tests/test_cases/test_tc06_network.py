@@ -35,7 +35,7 @@ class TestNetwork:
         """오프라인 상태에서 offline 페이지 진입 시 재시도 버튼이 노출된다"""
         offline_driver.execute_script("AndroidBridge.navigate('offline.html')")
         retry_btn = WebDriverWait(offline_driver, 10).until(
-            EC.presence_of_element_located((By.ID, "retry_btn"))
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#retry_btn"))
         )
         assert retry_btn.is_displayed()
 
@@ -43,7 +43,7 @@ class TestNetwork:
         """오프라인 상태에서 네트워크 상태 텍스트가 '오프라인'을 포함한다"""
         offline_driver.execute_script("AndroidBridge.navigate('offline.html')")
         status_el = WebDriverWait(offline_driver, 10).until(
-            EC.presence_of_element_located((By.ID, "network_status"))
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#network_status"))
         )
         assert "오프라인" in status_el.text
 
@@ -51,10 +51,10 @@ class TestNetwork:
         """오프라인 상태에서 재시도 클릭 시 연결 안됨 메시지가 유지된다"""
         offline_driver.execute_script("AndroidBridge.navigate('offline.html')")
         retry_btn = WebDriverWait(offline_driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "retry_btn"))
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "#retry_btn"))
         )
         retry_btn.click()
-        status_el = offline_driver.find_element(By.ID, "network_status")
+        status_el = offline_driver.find_element(By.CSS_SELECTOR, "#network_status")
         assert "연결되지 않았습니다" in status_el.text or "오프라인" in status_el.text
 
     def test_retry_after_network_recovery_navigates_to_products(self, driver, webview_driver):
@@ -66,7 +66,7 @@ class TestNetwork:
 
         webview_driver.execute_script("AndroidBridge.navigate('offline.html')")
         WebDriverWait(webview_driver, 10).until(
-            EC.presence_of_element_located((By.ID, "retry_btn"))
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#retry_btn"))
         )
 
         # 네트워크 복구
@@ -75,7 +75,7 @@ class TestNetwork:
         switch_to_webview(driver)
 
         retry_btn = WebDriverWait(webview_driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "retry_btn"))
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "#retry_btn"))
         )
         retry_btn.click()
 

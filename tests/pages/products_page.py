@@ -3,15 +3,15 @@ from .base_page import BasePage
 
 
 class ProductsPage(BasePage):
-    SEARCH_INPUT = (By.ID, "search_input")
-    SEARCH_BTN = (By.ID, "search_btn")
-    FILTER_ALL = (By.ID, "filter_all")
-    FILTER_ELECTRONICS = (By.ID, "filter_electronics")
-    FILTER_FASHION = (By.ID, "filter_fashion")
-    FILTER_FOOD = (By.ID, "filter_food")
-    PRODUCT_GRID = (By.ID, "product_grid")
+    SEARCH_INPUT = (By.CSS_SELECTOR, "#search_input")
+    SEARCH_BTN = (By.CSS_SELECTOR, "#search_btn")
+    FILTER_ALL = (By.CSS_SELECTOR, "#filter_all")
+    FILTER_ELECTRONICS = (By.CSS_SELECTOR, "#filter_electronics")
+    FILTER_FASHION = (By.CSS_SELECTOR, "#filter_fashion")
+    FILTER_FOOD = (By.CSS_SELECTOR, "#filter_food")
+    PRODUCT_GRID = (By.CSS_SELECTOR, "#product_grid")
     PRODUCT_CARDS = (By.CSS_SELECTOR, ".product-card")
-    NO_RESULT = (By.ID, "no_result")
+    NO_RESULT = (By.CSS_SELECTOR, "#no_result")
 
     def wait_for_load(self):
         self.find(*self.PRODUCT_GRID)
@@ -54,7 +54,7 @@ class ProductsPage(BasePage):
         return self
 
     def click_product_by_id(self, product_id: int):
-        self.find_clickable(By.ID, f"product_{product_id}").click()
+        self.find_clickable(By.CSS_SELECTOR, f"#product_{product_id}").click()
         return self
 
     def is_no_result_visible(self) -> bool:

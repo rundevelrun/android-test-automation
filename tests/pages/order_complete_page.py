@@ -3,13 +3,13 @@ from .base_page import BasePage
 
 
 class OrderCompletePage(BasePage):
-    COMPLETE_TITLE = (By.ID, "complete_title")
-    ORDER_NUMBER = (By.ID, "order_number")
-    ORDER_DATE = (By.ID, "order_date")
-    ORDER_ITEMS = (By.ID, "order_items")
-    ORDER_TOTAL = (By.ID, "order_total")
-    HOME_BTN = (By.ID, "home_btn")
-    ORDER_LIST_BTN = (By.ID, "order_list_btn")
+    COMPLETE_TITLE = (By.CSS_SELECTOR, "#complete_title")
+    ORDER_NUMBER = (By.CSS_SELECTOR, "#order_number")
+    ORDER_DATE = (By.CSS_SELECTOR, "#order_date")
+    ORDER_ITEMS = (By.CSS_SELECTOR, "#order_items")
+    ORDER_TOTAL = (By.CSS_SELECTOR, "#order_total")
+    HOME_BTN = (By.CSS_SELECTOR, "#home_btn")
+    ORDER_LIST_BTN = (By.CSS_SELECTOR, "#order_list_btn")
 
     def wait_for_load(self):
         self.find(*self.COMPLETE_TITLE)

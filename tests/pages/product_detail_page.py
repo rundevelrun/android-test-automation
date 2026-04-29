@@ -3,15 +3,15 @@ from .base_page import BasePage
 
 
 class ProductDetailPage(BasePage):
-    PRODUCT_NAME = (By.ID, "product_name")
-    PRODUCT_PRICE = (By.ID, "product_price")
-    QTY_MINUS = (By.ID, "qty_minus")
-    QTY_PLUS = (By.ID, "qty_plus")
-    QTY_VALUE = (By.ID, "qty_value")
-    TOTAL_PRICE = (By.ID, "total_price")
-    ADD_TO_CART_BTN = (By.ID, "add_to_cart_btn")
-    BUY_NOW_BTN = (By.ID, "buy_now_btn")
-    TOAST_MSG = (By.ID, "toast_msg")
+    PRODUCT_NAME = (By.CSS_SELECTOR, "#product_name")
+    PRODUCT_PRICE = (By.CSS_SELECTOR, "#product_price")
+    QTY_MINUS = (By.CSS_SELECTOR, "#qty_minus")
+    QTY_PLUS = (By.CSS_SELECTOR, "#qty_plus")
+    QTY_VALUE = (By.CSS_SELECTOR, "#qty_value")
+    TOTAL_PRICE = (By.CSS_SELECTOR, "#total_price")
+    ADD_TO_CART_BTN = (By.CSS_SELECTOR, "#add_to_cart_btn")
+    BUY_NOW_BTN = (By.CSS_SELECTOR, "#buy_now_btn")
+    TOAST_MSG = (By.CSS_SELECTOR, "#toast_msg")
 
     def wait_for_load(self):
         self.find(*self.PRODUCT_NAME)
@@ -41,7 +41,6 @@ class ProductDetailPage(BasePage):
         return self
 
     def click_buy_now(self):
-        """TC-05: 네이티브 다이얼로그를 트리거하는 버튼"""
         self.find_clickable(*self.BUY_NOW_BTN).click()
         return self
 

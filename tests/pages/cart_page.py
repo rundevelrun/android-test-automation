@@ -3,9 +3,9 @@ from .base_page import BasePage
 
 
 class CartPage(BasePage):
-    ORDER_BTN = (By.ID, "order_btn")
-    SUBTOTAL_PRICE = (By.ID, "subtotal_price")
-    TOTAL_PRICE = (By.ID, "total_price")
+    ORDER_BTN = (By.CSS_SELECTOR, "#order_btn")
+    SUBTOTAL_PRICE = (By.CSS_SELECTOR, "#subtotal_price")
+    TOTAL_PRICE = (By.CSS_SELECTOR, "#total_price")
     EMPTY_STATE = (By.CSS_SELECTOR, ".empty-state")
     CART_ITEMS = (By.CSS_SELECTOR, ".cart-item")
 
@@ -24,11 +24,11 @@ class CartPage(BasePage):
         return len(self.driver.find_elements(*self.CART_ITEMS))
 
     def get_item_qty(self, product_id: int) -> int:
-        el = self.driver.find_element(By.ID, f"qty_{product_id}")
+        el = self.driver.find_element(By.CSS_SELECTOR, f"#qty_{product_id}")
         return int(el.text)
 
     def change_item_qty(self, product_id: int, delta: int):
-        item = self.find(By.ID, f"cart_item_{product_id}")
+        item = self.find(By.CSS_SELECTOR, f"#cart_item_{product_id}")
         btn_selector = ".qty-btn:first-of-type" if delta < 0 else ".qty-btn:last-of-type"
         btn = item.find_element(By.CSS_SELECTOR, btn_selector)
         for _ in range(abs(delta)):
@@ -36,7 +36,7 @@ class CartPage(BasePage):
         return self
 
     def remove_item(self, product_id: int):
-        item = self.find(By.ID, f"cart_item_{product_id}")
+        item = self.find(By.CSS_SELECTOR, f"#cart_item_{product_id}")
         item.find_element(By.CSS_SELECTOR, ".remove-btn").click()
         return self
 

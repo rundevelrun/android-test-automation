@@ -41,7 +41,7 @@ class TestLoginLockout:
             page.login("test@example.com", "wrong")
             webview_driver.execute_script("document.getElementById('error_msg').classList.remove('show')")
 
-        warn = wait_visible(webview_driver, By.ID, "attempt_warn")
+        warn = wait_visible(webview_driver, By.CSS_SELECTOR, "#attempt_warn")
         assert "실패" in warn.text
         assert "잠" in warn.text
 
@@ -51,7 +51,7 @@ class TestLoginLockout:
         for _ in range(5):
             page.login("test@example.com", "wrong")
 
-        banner = wait_visible(webview_driver, By.ID, "lockout_banner")
+        banner = wait_visible(webview_driver, By.CSS_SELECTOR, "#lockout_banner")
         assert banner.is_displayed()
         assert "잠금" in banner.text
 
@@ -60,7 +60,7 @@ class TestLoginLockout:
         for _ in range(5):
             LoginPage(webview_driver).login("test@example.com", "wrong")
 
-        btn = webview_driver.find_element(By.ID, "login_btn")
+        btn = webview_driver.find_element(By.CSS_SELECTOR, "#login_btn")
         assert not btn.is_enabled()
 
     def test_lockout_timer_visible(self, webview_driver):
@@ -68,14 +68,14 @@ class TestLoginLockout:
         for _ in range(5):
             LoginPage(webview_driver).login("test@example.com", "wrong")
 
-        timer = wait_visible(webview_driver, By.ID, "lockout_timer")
+        timer = wait_visible(webview_driver, By.CSS_SELECTOR, "#lockout_timer")
         assert "초" in timer.text
 
     def test_invalid_email_format_shows_error(self, webview_driver):
         """잘못된 이메일 형식 입력 시 형식 오류 메시지가 노출된다"""
         page = LoginPage(webview_driver)
         page.enter_email("notanemail").enter_password("password123").click_login()
-        error = wait_visible(webview_driver, By.ID, "error_msg")
+        error = wait_visible(webview_driver, By.CSS_SELECTOR, "#error_msg")
         assert "이메일 형식" in error.text
 
 
@@ -92,17 +92,17 @@ class TestOutOfStock:
 
     def test_soldout_badge_visible_on_list(self, webview_driver):
         """품절 상품(id=9)에 '품절' 배지가 노출된다"""
-        badge = wait_visible(webview_driver, By.ID, "badge_soldout_9")
+        badge = wait_visible(webview_driver, By.CSS_SELECTOR, "#badge_soldout_9")
         assert "품절" in badge.text
 
     def test_low_stock_badge_visible_on_list(self, webview_driver):
         """재고 2개 상품(id=10)에 '재고 N개' 배지가 노출된다"""
-        badge = wait_visible(webview_driver, By.ID, "badge_low_10")
+        badge = wait_visible(webview_driver, By.CSS_SELECTOR, "#badge_low_10")
         assert "재고" in badge.text
 
     def test_soldout_product_click_shows_native_dialog(self, driver, webview_driver):
         """품절 상품 클릭 시 재입고 안내 네이티브 다이얼로그가 노출된다"""
-        webview_driver.find_element(By.ID, "product_9").click()
+        webview_driver.find_element(By.CSS_SELECTOR, "#product_9").click()
         switch_to_native(driver)
         assert NativePage(driver).is_dialog_present()
         NativePage(driver).cancel_dialog()
@@ -115,8 +115,8 @@ class TestOutOfStock:
             "AndroidBridge.navigate('product_detail.html');"
         )
         ProductDetailPage(webview_driver).wait_for_load()
-        cart_btn = webview_driver.find_element(By.ID, "add_to_cart_btn")
-        buy_btn = webview_driver.find_element(By.ID, "buy_now_btn")
+        cart_btn = webview_driver.find_element(By.CSS_SELECTOR, "#add_to_cart_btn")
+        buy_btn = webview_driver.find_element(By.CSS_SELECTOR, "#buy_now_btn")
         assert not cart_btn.is_enabled()
         assert not buy_btn.is_enabled()
 
@@ -127,7 +127,7 @@ class TestOutOfStock:
             "AndroidBridge.navigate('product_detail.html');"
         )
         ProductDetailPage(webview_driver).wait_for_load()
-        overlay = wait_visible(webview_driver, By.ID, "soldout_overlay")
+        overlay = wait_visible(webview_driver, By.CSS_SELECTOR, "#soldout_overlay")
         assert overlay.is_displayed()
 
     def test_restock_box_visible_on_soldout_detail(self, webview_driver):
@@ -137,7 +137,7 @@ class TestOutOfStock:
             "AndroidBridge.navigate('product_detail.html');"
         )
         ProductDetailPage(webview_driver).wait_for_load()
-        box = wait_visible(webview_driver, By.ID, "restock_box")
+        box = wait_visible(webview_driver, By.CSS_SELECTOR, "#restock_box")
         assert box.is_displayed()
 
     def test_low_stock_status_shown_on_detail(self, webview_driver):
@@ -147,7 +147,7 @@ class TestOutOfStock:
             "AndroidBridge.navigate('product_detail.html');"
         )
         ProductDetailPage(webview_driver).wait_for_load()
-        status = wait(webview_driver, By.ID, "stock_status")
+        status = wait(webview_driver, By.CSS_SELECTOR, "#stock_status")
         assert "재고" in status.text and "남음" in status.text
 
 
@@ -173,8 +173,8 @@ class TestQuantityLimit:
     def test_qty_limit_warning_shown_at_max(self, webview_driver):
         """수량 10에서 + 버튼 클릭 시 최대 수량 경고 문구가 노출된다"""
         ProductDetailPage(webview_driver).increase_qty(9)  # qty = 10
-        webview_driver.find_element(By.ID, "qty_plus").click()  # 11 시도
-        warn = wait_visible(webview_driver, By.ID, "qty_limit_warn")
+        webview_driver.find_element(By.CSS_SELECTOR, "#qty_plus").click()  # 11 시도
+        warn = wait_visible(webview_driver, By.CSS_SELECTOR, "#qty_limit_warn")
         assert warn.is_displayed()
         assert "10개" in warn.text
 
@@ -186,7 +186,7 @@ class TestQuantityLimit:
             "[{id:1, name:'무선 블루투스 이어폰', price:89000, qty:10}]));"
         )
         ProductDetailPage(webview_driver).add_to_cart()
-        warn = wait_visible(webview_driver, By.ID, "cart_limit_warn")
+        warn = wait_visible(webview_driver, By.CSS_SELECTOR, "#cart_limit_warn")
         assert warn.is_displayed()
         assert "최대" in warn.text
 
@@ -209,44 +209,44 @@ class TestPaymentAndCoupon:
 
     def test_invalid_coupon_shows_error(self, webview_driver):
         """존재하지 않는 쿠폰 코드 입력 시 오류 메시지가 노출된다"""
-        webview_driver.find_element(By.ID, "coupon_input").send_keys("INVALID999")
-        webview_driver.find_element(By.ID, "apply_coupon_btn").click()
-        msg = wait_visible(webview_driver, By.ID, "coupon_msg")
+        webview_driver.find_element(By.CSS_SELECTOR, "#coupon_input").send_keys("INVALID999")
+        webview_driver.find_element(By.CSS_SELECTOR, "#apply_coupon_btn").click()
+        msg = wait_visible(webview_driver, By.CSS_SELECTOR, "#coupon_msg")
         assert "유효하지 않은" in msg.text
 
     def test_valid_coupon_applies_discount(self, webview_driver):
         """유효한 쿠폰(SAVE10) 입력 시 할인이 적용되고 성공 메시지가 노출된다"""
-        webview_driver.find_element(By.ID, "coupon_input").send_keys("SAVE10")
-        webview_driver.find_element(By.ID, "apply_coupon_btn").click()
-        msg = wait_visible(webview_driver, By.ID, "coupon_msg")
+        webview_driver.find_element(By.CSS_SELECTOR, "#coupon_input").send_keys("SAVE10")
+        webview_driver.find_element(By.CSS_SELECTOR, "#apply_coupon_btn").click()
+        msg = wait_visible(webview_driver, By.CSS_SELECTOR, "#coupon_msg")
         assert "적용" in msg.text
 
         # 할인 금액이 total_price에 반영됐는지 확인 (재렌더링 후 summary 확인)
-        subtotal_el = webview_driver.find_element(By.ID, "subtotal_price")
+        subtotal_el = webview_driver.find_element(By.CSS_SELECTOR, "#subtotal_price")
         assert "89,000" in subtotal_el.text  # 원가
-        total_el = webview_driver.find_element(By.ID, "total_price")
+        total_el = webview_driver.find_element(By.CSS_SELECTOR, "#total_price")
         # 10% 할인: 89000 - 8900 = 80100 + 배송비 3000 = 83100
         assert "89,000" not in total_el.text  # 할인 적용으로 달라져야 함
 
     def test_fail_test_coupon_triggers_payment_error(self, webview_driver):
         """FAIL_TEST 쿠폰 적용 후 주문 시 결제 실패 배너가 노출된다"""
-        webview_driver.find_element(By.ID, "coupon_input").send_keys("FAIL_TEST")
-        webview_driver.find_element(By.ID, "apply_coupon_btn").click()
-        wait_visible(webview_driver, By.ID, "coupon_msg")
+        webview_driver.find_element(By.CSS_SELECTOR, "#coupon_input").send_keys("FAIL_TEST")
+        webview_driver.find_element(By.CSS_SELECTOR, "#apply_coupon_btn").click()
+        wait_visible(webview_driver, By.CSS_SELECTOR, "#coupon_msg")
 
-        webview_driver.find_element(By.ID, "order_btn").click()
-        banner = wait_visible(webview_driver, By.ID, "payment_error_banner")
+        webview_driver.find_element(By.CSS_SELECTOR, "#order_btn").click()
+        banner = wait_visible(webview_driver, By.CSS_SELECTOR, "#payment_error_banner")
         assert banner.is_displayed()
         assert "결제" in banner.text
 
-        error_code = webview_driver.find_element(By.ID, "payment_error_code").text
+        error_code = webview_driver.find_element(By.CSS_SELECTOR, "#payment_error_code").text
         assert "ERR_PAYMENT_" in error_code
 
     def test_payment_error_does_not_navigate_away(self, webview_driver):
         """결제 실패 시 장바구니 페이지에 그대로 머문다 (주문완료 페이지로 가지 않는다)"""
-        webview_driver.find_element(By.ID, "coupon_input").send_keys("FAIL_TEST")
-        webview_driver.find_element(By.ID, "apply_coupon_btn").click()
-        webview_driver.find_element(By.ID, "order_btn").click()
+        webview_driver.find_element(By.CSS_SELECTOR, "#coupon_input").send_keys("FAIL_TEST")
+        webview_driver.find_element(By.CSS_SELECTOR, "#apply_coupon_btn").click()
+        webview_driver.find_element(By.CSS_SELECTOR, "#order_btn").click()
         assert "cart" in webview_driver.current_url
 
 
@@ -262,7 +262,7 @@ class TestSessionExpiry:
             "AndroidBridge.navigate('products.html');"
         )
         ProductsPage(webview_driver).wait_for_load()
-        banner = wait_visible(webview_driver, By.ID, "session_banner")
+        banner = wait_visible(webview_driver, By.CSS_SELECTOR, "#session_banner")
         assert banner.is_displayed()
         assert "세션" in banner.text
 
@@ -271,5 +271,5 @@ class TestSessionExpiry:
         LoginPage(webview_driver).wait_for_load()
         LoginPage(webview_driver).login("test@example.com", "password123")
         ProductsPage(webview_driver).wait_for_load()
-        banner = webview_driver.find_element(By.ID, "session_banner")
+        banner = webview_driver.find_element(By.CSS_SELECTOR, "#session_banner")
         assert not banner.is_displayed()

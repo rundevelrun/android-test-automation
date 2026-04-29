@@ -3,10 +3,10 @@ from .base_page import BasePage
 
 
 class LoginPage(BasePage):
-    EMAIL = (By.ID, "email")
-    PASSWORD = (By.ID, "password")
-    LOGIN_BTN = (By.ID, "login_btn")
-    ERROR_MSG = (By.ID, "error_msg")
+    EMAIL = (By.CSS_SELECTOR, "#email")
+    PASSWORD = (By.CSS_SELECTOR, "#password")
+    LOGIN_BTN = (By.CSS_SELECTOR, "#login_btn")
+    ERROR_MSG = (By.CSS_SELECTOR, "#error_msg")
 
     def wait_for_load(self):
         self.find(*self.LOGIN_BTN)
