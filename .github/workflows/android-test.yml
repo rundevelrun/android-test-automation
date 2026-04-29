@@ -194,7 +194,12 @@ jobs:
           path: appium.log
           retention-days: 7
 
-      # ── 10. JUnit 결과를 PR에 표시 ──
+      # ── 10. Job Summary에 테스트 결과 표시 ──
+      - name: Generate test summary
+        if: always()
+        run: python3 scripts/generate_summary.py tests/reports/junit.xml
+
+      # ── 11. JUnit 결과를 PR에 표시 ──
       - name: Publish test results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
