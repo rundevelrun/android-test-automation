@@ -3,7 +3,7 @@ import time
 import pytest
 import logging
 from appium import webdriver
-from appium.options import UiAutomator2Options
+from appium.options import AppiumOptions as UiAutomator2Options
 from capabilities import APPIUM_SERVER, CAPABILITIES, WEBVIEW_CONTEXT_PREFIX, NATIVE_CONTEXT
 
 logger = logging.getLogger(__name__)
