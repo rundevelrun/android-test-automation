@@ -1,0 +1,79 @@
+name: Network Exception Test (TC-06)
+
+on:
+  # 메인 워크플로와 분리 — 네트워크 조작은 별도 실행
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'   # 매주 월요일 02:00 UTC
+
+jobs:
+  network-test:
+    name: TC-06 Network Exception
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-debug-apk
+          path: apk/
+        continue-on-error: true   # 없으면 직접 빌드
+
+      - name: Build APK if not cached
+        if: failure()
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node.js + Appium
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install -g appium && appium driver install uiautomator2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install -r tests/requirements.txt
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run TC-06 on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            DEVICE=$(adb devices | grep "device$" | awk '{print $1}' | head -1)
+            adb -s "$DEVICE" install apk/app-debug.apk
+            python3 scripts/ci_setup_capabilities.py "$DEVICE"
+            appium --address 127.0.0.1 --port 4723 --relaxed-security &
+            sleep 8
+            cd tests
+            mkdir -p reports
+            pytest test_cases/test_tc06_network.py -v \
+              --html=reports/tc06-report.html \
+              --self-contained-html \
+              --junitxml=reports/tc06-junit.xml
+
+      - name: Upload TC-06 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tc06-network-report
+          path: tests/reports/
+          retention-days: 14

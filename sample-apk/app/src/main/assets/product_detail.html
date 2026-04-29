@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상품 상세</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+  .product-hero { background: #e8f0fe; height: 220px; display: flex; align-items: center; justify-content: center; font-size: 80px; position: relative; }
+  .soldout-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; }
+  .soldout-label { color: #fff; font-size: 28px; font-weight: 900; letter-spacing: 4px; border: 3px solid #fff; padding: 8px 24px; }
+  .content { background: #fff; padding: 20px 18px; }
+  .category-tag { display: inline-block; padding: 4px 12px; background: #e8f0fe; color: #1a73e8; border-radius: 12px; font-size: 12px; margin-bottom: 10px; }
+  .product-name { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 6px; }
+  .product-price { font-size: 22px; font-weight: 800; color: #1a73e8; margin-bottom: 8px; }
+  /* 재고 상태 */
+  .stock-status { font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+  .stock-normal { color: #43a047; }
+  .stock-low { color: #ff7043; }
+  .stock-out { color: #9e9e9e; }
+  /* 재입고 알림 박스 */
+  .restock-box { background: #fff3e0; border: 1px solid #ffb74d; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
+  .restock-box p { font-size: 13px; color: #e65100; margin-bottom: 10px; }
+  .restock-btn { width: 100%; padding: 12px; background: #ff7043; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .divider { height: 1px; background: #f0f0f0; margin: 16px 0; }
+  .section-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 10px; }
+  .description { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 18px; }
+  /* 수량 */
+  .qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .qty-label { font-size: 14px; color: #333; font-weight: 600; }
+  .qty-btn { width: 36px; height: 36px; border: 1.5px solid #ddd; background: #fff; border-radius: 8px; font-size: 20px; cursor: pointer; }
+  .qty-btn:disabled { border-color: #eee; color: #ccc; cursor: not-allowed; }
+  .qty-value { font-size: 18px; font-weight: 700; min-width: 32px; text-align: center; }
+  /* 최대 수량 경고 */
+  .qty-limit-warn { font-size: 12px; color: #f57c00; margin-bottom: 14px; display: none; }
+  .qty-limit-warn.show { display: block; }
+  /* 장바구니 한도 경고 */
+  .cart-limit-warn { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 13px; color: #f57f17; display: none; }
+  .cart-limit-warn.show { display: block; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid #f0f0f0; margin-bottom: 16px; }
+  .total-label { font-size: 14px; color: #555; }
+  .total-price { font-size: 20px; font-weight: 800; color: #111; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn { flex: 1; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; border: none; }
+  .btn:disabled { background: #e0e0e0; color: #9e9e9e; cursor: not-allowed; }
+  .btn-cart { background: #e8f0fe; color: #1a73e8; }
+  .btn-buy { background: #1a73e8; color: #fff; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #323232; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 14px; display: none; z-index: 100; white-space: nowrap; }
+  .toast.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="product-hero" id="product_hero">
+  <span id="product_emoji">🎧</span>
+  <div class="soldout-overlay" id="soldout_overlay" style="display:none;">
+    <div class="soldout-label">SOLD OUT</div>
+  </div>
+</div>
+
+<div class="content">
+  <span class="category-tag" id="product_category">전자기기</span>
+  <div class="product-name" id="product_name">상품명</div>
+  <div class="product-price" id="product_price">₩0</div>
+  <div class="stock-status" id="stock_status"></div>
+
+  <!-- 에러 케이스: 품절 시 재입고 알림 박스 -->
+  <div class="restock-box" id="restock_box" style="display:none;">
+    <p>현재 품절된 상품입니다. 재입고 알림을 신청하시면 입고 시 알려드립니다.</p>
+    <button class="restock-btn" id="restock_btn" onclick="requestRestock()">재입고 알림 신청</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">상품 설명</div>
+  <div class="description" id="product_description"></div>
+
+  <div class="qty-row">
+    <span class="qty-label">수량</span>
+    <button class="qty-btn" id="qty_minus" onclick="changeQty(-1)">−</button>
+    <span class="qty-value" id="qty_value">1</span>
+    <button class="qty-btn" id="qty_plus" onclick="changeQty(1)">+</button>
+  </div>
+
+  <!-- 에러 케이스: 최대 수량 도달 경고 -->
+  <div class="qty-limit-warn" id="qty_limit_warn">⚠ 1회 최대 주문 수량(10개)에 도달했습니다.</div>
+
+  <!-- 에러 케이스: 장바구니 동일 상품 한도 초과 경고 -->
+  <div class="cart-limit-warn" id="cart_limit_warn">
+    ⚠ 장바구니에 이미 최대 수량이 담겨 있습니다. (최대 10개/상품)
+  </div>
+
+  <div class="total-row">
+    <span class="total-label">합계</span>
+    <span class="total-price" id="total_price">₩0</span>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-cart" id="add_to_cart_btn" onclick="addToCart()">장바구니</button>
+    <button class="btn btn-buy" id="buy_now_btn" onclick="buyNow()">바로 구매</button>
+  </div>
+</div>
+
+<div class="toast" id="toast_msg"></div>
+
+<script>
+  var products = [
+    { id: 1,  name: '무선 블루투스 이어폰',  category: '전자기기', price: 89000,  emoji: '🎧', stock: 15, description: '고음질 무선 이어폰. 최대 24시간 재생, IPX5 방수 지원.' },
+    { id: 2,  name: '스마트워치 SE',          category: '전자기기', price: 249000, emoji: '⌚', stock: 8,  description: '심박수 측정, GPS, 수면 분석 기능이 탑재된 스마트워치.' },
+    { id: 3,  name: '린넨 반팔 셔츠',         category: '패션',     price: 39000,  emoji: '👕', stock: 20, description: '통기성 좋은 린넨 소재. 여름 필수 아이템.' },
+    { id: 4,  name: '슬림핏 청바지',           category: '패션',     price: 59000,  emoji: '👖', stock: 12, description: '스트레치 원단으로 활동성이 좋은 슬림핏 청바지.' },
+    { id: 5,  name: '유기농 그래놀라',         category: '식품',     price: 15000,  emoji: '🌾', stock: 30, description: '무농약 귀리와 견과류로 만든 건강 그래놀라 500g.' },
+    { id: 6,  name: '아메리카노 원두 500g',    category: '식품',     price: 22000,  emoji: '☕', stock: 25, description: '에티오피아 싱글 오리진. 산미와 바디감이 균형 잡힌 원두.' },
+    { id: 7,  name: '노이즈캔슬링 헤드폰',     category: '전자기기', price: 199000, emoji: '🎵', stock: 5,  description: 'ANC 적용, 30시간 배터리, 프리미엄 사운드.' },
+    { id: 8,  name: '캐주얼 스니커즈',         category: '패션',     price: 75000,  emoji: '👟', stock: 9,  description: '쿠셔닝이 좋은 경량 스니커즈. 데일리 착화에 최적.' },
+    { id: 9,  name: '한정판 기계식 키보드',    category: '전자기기', price: 350000, emoji: '⌨️', stock: 0,  description: '갈축 스위치, RGB 백라이트. 한정 수량 판매 상품.' },
+    { id: 10, name: '프리미엄 가죽 벨트',      category: '패션',     price: 45000,  emoji: '👜', stock: 2,  description: '천연 소가죽. 클래식한 디자인의 남녀공용 벨트.' },
+  ];
+
+  var MAX_QTY = 10;
+  var qty = 1;
+  var product = null;
+
+  function init() {
+    var id = parseInt(sessionStorage.getItem('selected_product_id') || '1');
+    product = products.find(function(p) { return p.id === id; }) || products[0];
+
+    document.getElementById('product_emoji').textContent = product.emoji;
+    document.getElementById('product_category').textContent = product.category;
+    document.getElementById('product_name').textContent = product.name;
+    document.getElementById('product_price').textContent = '₩' + product.price.toLocaleString();
+    document.getElementById('product_description').textContent = product.description;
+
+    renderStockState();
+    updateTotal();
+  }
+
+  function renderStockState() {
+    var statusEl = document.getElementById('stock_status');
+    var overlay = document.getElementById('soldout_overlay');
+    var restockBox = document.getElementById('restock_box');
+    var cartBtn = document.getElementById('add_to_cart_btn');
+    var buyBtn = document.getElementById('buy_now_btn');
+    var qtyMinus = document.getElementById('qty_minus');
+    var qtyPlus = document.getElementById('qty_plus');
+
+    if (product.stock === 0) {
+      statusEl.textContent = '품절';
+      statusEl.className = 'stock-status stock-out';
+      overlay.style.display = 'flex';
+      restockBox.style.display = 'block';
+      cartBtn.disabled = true;
+      buyBtn.disabled = true;
+      qtyMinus.disabled = true;
+      qtyPlus.disabled = true;
+    } else if (product.stock <= 3) {
+      statusEl.textContent = '재고 ' + product.stock + '개 남음';
+      statusEl.className = 'stock-status stock-low';
+      statusEl.id = 'stock_status';
+    } else {
+      statusEl.textContent = '재고 있음';
+      statusEl.className = 'stock-status stock-normal';
+    }
+  }
+
+  function changeQty(delta) {
+    var newQty = qty + delta;
+    if (newQty < 1 || newQty > MAX_QTY) {
+      if (newQty > MAX_QTY) {
+        document.getElementById('qty_limit_warn').classList.add('show');
+      }
+      return;
+    }
+    document.getElementById('qty_limit_warn').classList.remove('show');
+    document.getElementById('cart_limit_warn').classList.remove('show');
+    qty = newQty;
+    document.getElementById('qty_value').textContent = qty;
+    updateTotal();
+  }
+
+  function updateTotal() {
+    if (!product) return;
+    document.getElementById('total_price').textContent = '₩' + (product.price * qty).toLocaleString();
+  }
+
+  function addToCart() {
+    var cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+    var existing = cart.find(function(item) { return item.id === product.id; });
+    var currentQty = existing ? existing.qty : 0;
+
+    // 에러 케이스: 장바구니 동일 상품 최대 수량 초과
+    if (currentQty + qty > MAX_QTY) {
+      document.getElementById('cart_limit_warn').classList.add('show');
+      showToast('장바구니에 최대 ' + MAX_QTY + '개까지 담을 수 있습니다.');
+      return;
+    }
+
+    document.getElementById('cart_limit_warn').classList.remove('show');
+
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      cart.push({ id: product.id, name: product.name, price: product.price, qty: qty });
+    }
+    sessionStorage.setItem('cart', JSON.stringify(cart));
+    var total = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+    AndroidBridge.updateCartBadge(total);
+    showToast('장바구니에 추가되었습니다.');
+  }
+
+  function buyNow() {
+    AndroidBridge.showNativeDialog(
+      '구매 확인',
+      product.name + ' ' + qty + '개를 구매하시겠습니까?\n총 ₩' + (product.price * qty).toLocaleString()
+    );
+  }
+
+  function requestRestock() {
+    AndroidBridge.showNativeDialog('재입고 알림', '재입고 알림을 신청하시겠습니까?\n입고 시 등록하신 이메일로 안내드립니다.');
+  }
+
+  function onNativeDialogConfirmed() {
+    // 구매 확인 vs 재입고 알림 구분
+    if (product.stock === 0) {
+      showToast('재입고 알림이 신청되었습니다.');
+      document.getElementById('restock_btn').disabled = true;
+      document.getElementById('restock_btn').textContent = '알림 신청 완료';
+    } else {
+      var cart = [{ id: product.id, name: product.name, price: product.price, qty: qty }];
+      sessionStorage.setItem('cart', JSON.stringify(cart));
+      AndroidBridge.navigate('cart.html');
+    }
+  }
+
+  function onNativeDialogCancelled() {
+    if (product.stock > 0) showToast('구매가 취소되었습니다.');
+  }
+
+  function showToast(msg) {
+    var toast = document.getElementById('toast_msg');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Test reports
+tests/reports/
+
+# Appium
+appium.log
+
+# Android build
+sample-apk/.gradle/
+sample-apk/app/build/
+sample-apk/local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
