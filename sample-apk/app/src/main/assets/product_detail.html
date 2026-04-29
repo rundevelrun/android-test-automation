@@ -166,7 +166,7 @@
 
   function changeQty(delta) {
     var newQty = qty + delta;
-    if (newQty < 1 || newQty > MAX_QTY) {
+    if (newQty > MAX_QTY) {
       if (newQty > MAX_QTY) {
         document.getElementById('qty_limit_warn').classList.add('show');
       }
