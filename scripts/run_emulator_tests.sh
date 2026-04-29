@@ -5,9 +5,11 @@ DEVICE=$(adb devices | grep -v "List of" | grep "device$" | awk '{print $1}' | h
 echo "Device: $DEVICE"
 
 if [ -n "$DEVICE" ]; then
-  adb -s "$DEVICE" install -r apk/app-debug.apk
+  adb -s "$DEVICE" uninstall com.example.webviewsample || true
+  adb -s "$DEVICE" install apk/app-debug.apk
 else
-  adb install -r apk/app-debug.apk
+  adb uninstall com.example.webviewsample || true
+  adb install apk/app-debug.apk
   DEVICE=$(adb devices | grep -v "List of" | grep "device$" | awk '{print $1}' | head -1)
 fi
 echo "APK installed (device: $DEVICE)"
