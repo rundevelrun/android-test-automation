@@ -23,10 +23,25 @@ jobs:
 
       - name: Build APK if not cached
         if: failure()
+        run: |
+          # artifact 없을 때 직접 빌드
+          cd sample-apk
+          gradle assembleDebug --no-daemon
+          mkdir -p ../apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../apk/
+
+      - name: Set up JDK 17 (빌드 필요 시)
+        if: failure()
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup Gradle (빌드 필요 시)
+        if: failure()
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.2'
 
       - name: Set up Node.js + Appium
         uses: actions/setup-node@v4
