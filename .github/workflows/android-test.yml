@@ -164,13 +164,22 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: |
+            # 에뮬레이터 완전 부팅 대기
+            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
+            echo "에뮬레이터 부팅 완료"
+
             # 에뮬레이터 디바이스명 확인
             DEVICE=$(adb devices | grep -v "List of" | grep "device$" | awk '{print $1}' | head -1)
             echo "디바이스: $DEVICE"
 
-            # APK 설치
-            adb -s "$DEVICE" install apk/app-debug.apk
-            echo "APK 설치 완료"
+            # APK 설치 (DEVICE가 비어있으면 기본 디바이스에 설치)
+            if [ -n "$DEVICE" ]; then
+              adb -s "$DEVICE" install -r apk/app-debug.apk
+            else
+              adb install -r apk/app-debug.apk
+              DEVICE=$(adb devices | grep -v "List of" | grep "device$" | awk '{print $1}' | head -1)
+            fi
+            echo "APK 설치 완료 (디바이스: $DEVICE)"
 
             # WebView 버전 감지 및 capabilities 동적 생성
             python3 scripts/ci_setup_capabilities.py "$DEVICE"
